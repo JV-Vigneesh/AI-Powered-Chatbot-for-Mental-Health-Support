@@ -1,22 +1,29 @@
 package com.chatbot.controller;
 
-import com.chatbot.model.Message;
 import com.chatbot.service.ChatbotService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
-@CrossOrigin(origins = "*") // Allow frontend access
+@CrossOrigin(origins = "*") // Allows frontend access
 public class ChatbotController {
-    private final ChatbotService chatbotService;
 
-    public ChatbotController(ChatbotService chatbotService) {
-        this.chatbotService = chatbotService;
+    @Autowired
+    private ChatbotService chatbotService;
+
+    @PostMapping("/send")
+    public Map<String, String> chat(@RequestBody Map<String, String> request) {
+        String userId = request.getOrDefault("userId", "defaultUser"); // Ensure userId exists
+        String userMessage = request.get("message"); // Extract message from JSON
+        String botResponse = chatbotService.getResponse(userId, userMessage);
+
+        // Return JSON response
+        Map<String, String> response = new HashMap<>();
+        response.put("botResponse", botResponse);
+        return response;
     }
-
-    @GetMapping(produces = "application/json")  // Ensure JSON response
-    public Message chat(@RequestParam String message) {
-        return chatbotService.getResponse(message);
-    }
-
 }

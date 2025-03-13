@@ -49,19 +49,25 @@
 			<version>6.6.1.Final</version>
 		</dependency>
 
+		<!-- Stanford CoreNLP -->
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-corenlp</artifactId>
-			<version>4.5.7</version>
+			<version>4.5.8</version>
 		</dependency>
 
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-corenlp</artifactId>
-			<version>4.5.7</version>
+			<version>4.5.8</version>
 			<classifier>models</classifier>
 		</dependency>
-
+		<!-- JSON Library (Required for NLP) -->
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20210307</version>
+		</dependency>
 	</dependencies>
 
 	<build>
