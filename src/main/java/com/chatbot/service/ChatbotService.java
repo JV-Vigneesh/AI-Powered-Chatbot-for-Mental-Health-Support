@@ -8,14 +8,19 @@ public class ChatbotService {
 
     private final Map<String, String> predefinedResponses;
     private final GeminiService geminiService;
-    private final Map<String, List<String>> userContext;  // Tracks conversation history
+    private final Map<String, List<String>> userContext; // Tracks conversation history
+
+    private static final List<String> nonMentalHealthKeywords = List.of(
+            "generate image", "show me a picture", "create an image",
+            "programming", "technology", "history", "science", "math"
+    );
 
     public ChatbotService(GeminiService geminiService) {
         this.geminiService = geminiService;
         this.userContext = new HashMap<>();
         predefinedResponses = new HashMap<>();
-        
-// 🌟 Emotional Support
+
+        // 🌟 Emotional Support (Extended)
         predefinedResponses.put("sad", "😞 I'm sorry you're feeling this way. You're not alone! Do you want to talk more about it?");
         predefinedResponses.put("happy", "😊 That's great to hear! What made you happy today?");
         predefinedResponses.put("stressed", "😟 Take a deep breath. Try to take things one step at a time. You got this! 💪");
@@ -39,16 +44,12 @@ public class ChatbotService {
         predefinedResponses.put("surprised", "😲 Wow, that's unexpected! Tell me more! 😮");
         predefinedResponses.put("tired", "😴 It sounds like you need some rest. Make sure you get some sleep. 🌙");
         predefinedResponses.put("worried", "😟 What's worrying you? Sometimes talking it out can help. 🗣️");
-        predefinedResponses.put("optimistic", "🌈 That's a great outlook! Keep shining! ✨");
-        predefinedResponses.put("pessimistic", "🌧️ I understand it can be hard to see the bright side sometimes. Maybe we can try to find something positive? 🌤️");
-        predefinedResponses.put("curious", "🧐 That's a great trait! What are you curious about? 🔍");
-        predefinedResponses.put("nostalgic", "🕰️ Ah, nostalgia. What memories are bringing you back? 🎞️");
+        predefinedResponses.put("guilty", "😔 It's tough to deal with guilt. Mistakes happen. Do you want to talk about it?");
+        predefinedResponses.put("jealous", "😶 Jealousy is a natural feeling. It's important to focus on what makes you unique. Want to chat?");
+        predefinedResponses.put("homesick", "🏡 Missing home can be hard. Is there something comforting from home that might help?");
         predefinedResponses.put("overwhelmed", "🤯 It's okay to feel overwhelmed. Let's break it down into smaller steps. What's the first thing we can address? 🪜");
-        predefinedResponses.put("content", "😊 That's wonderful! It's good to feel content. 💖");
-        predefinedResponses.put("impatient", "⏳ I understand. Sometimes waiting is hard. What are you waiting for? ⏱️");
-        predefinedResponses.put("indecisive", "🤷‍♀️ That's okay! Let's explore your options together. What are you trying to decide? 🤔");
 
-// 🌟 Greetings & General
+        // 🌟 Greetings & General (Extended)
         predefinedResponses.put("hello", "👋 Hi there! How can I help you today?");
         predefinedResponses.put("hi", "Hey! 😊 How are you feeling?");
         predefinedResponses.put("hey", "Hey! How's your day going?");
@@ -62,64 +63,44 @@ public class ChatbotService {
         predefinedResponses.put("what is your name?", "I'm a helpful AI here to chat with you.");
         predefinedResponses.put("tell me a joke", "Why don't scientists trust atoms? Because they make up everything! 😂");
         predefinedResponses.put("tell me a fact", "Did you know that honey never spoils? 🍯");
-        predefinedResponses.put("tell me a story", "Once upon a time... 📖 Would you like a short story?");
-        predefinedResponses.put("i love you", "As a language model, I don't experience love, but I appreciate your kindness. ❤️");
-        predefinedResponses.put("i hate you", "I understand you might be feeling upset. How can I help you feel better? 🤝");
-        predefinedResponses.put("yes", "Great! How can I assist you further?");
-        predefinedResponses.put("no", "Okay, is there anything else I can do?");
-        predefinedResponses.put("maybe", "Alright, let me know if you decide.");
-        predefinedResponses.put("help", "Of course, how can I help?");
-        predefinedResponses.put("what's up", "Just here and ready to chat! What's up with you?");
-        predefinedResponses.put("okay", "Got it! Let me know if you need anything else.");
 
-        // 🌟 Crisis Support
+        // 🌟 Crisis Support (Extended)
         predefinedResponses.put("suicidal", "💔 I'm really sorry you're feeling this way. Please, talk to someone you trust. If it's an emergency, call 988.");
         predefinedResponses.put("self harm", "💙 You are important. You're not alone. Please reach out to a professional or a trusted person.");
         predefinedResponses.put("need help", "If you're in immediate distress, please call 988. I'm here to listen.");
+        predefinedResponses.put("panic attack", "🫁 Breathe in slowly... hold... and breathe out. You're safe. Let’s take this one step at a time.");
+        predefinedResponses.put("feeling hopeless", "💙 You're not alone. Sometimes it helps to talk to someone close to you or seek professional support.");
+        predefinedResponses.put("i want to die", "💔 I'm really sorry you're feeling this way. You're not alone. Please reach out to someone who can help. Call 988.");
 
         // Default response
         predefinedResponses.put("default", "🤔 I see. Can you tell me more?");
     }
 
     public String getResponse(String userId, String userMessage) {
-        updateContext(userId, userMessage);  // Save user input for context awareness
+        updateContext(userId, userMessage);
 
-        // ✅ First, check predefined responses
-        String lowerMessage = userMessage.toLowerCase();
+        if (isNonMentalHealthQuery(userMessage)) {
+            return "I'm here to support your mental health. If you're feeling stressed, anxious, or need someone to talk to, I'm here to help. 💙";
+        }
+
         for (String key : predefinedResponses.keySet()) {
-            if (lowerMessage.contains(key)) {
+            if (userMessage.toLowerCase().contains(key)) {
                 return predefinedResponses.get(key);
             }
         }
 
-        // ✅ If no predefined response, generate a contextual response
         return generateContextAwareResponse(userId, userMessage);
     }
 
-    private void updateContext(String userId, String message) {
-        userContext.putIfAbsent(userId, new ArrayList<>());
-        List<String> history = userContext.get(userId);
+    private boolean isNonMentalHealthQuery(String userMessage) {
+        return nonMentalHealthKeywords.stream().anyMatch(userMessage.toLowerCase()::contains);
+    }
 
-        if (history.size() > 5) { // Limit to last 5 messages
-            history.remove(0);
-        }
-        history.add(message);
+    private void updateContext(String userId, String message) {
+        userContext.computeIfAbsent(userId, k -> new ArrayList<>()).add(message);
     }
 
     private String generateContextAwareResponse(String userId, String userMessage) {
-        List<String> history = userContext.get(userId);
-
-        // ✅ If there's context, use it
-        if (history != null && !history.isEmpty()) {
-            String lastMessage = history.get(history.size() - 1).toLowerCase();
-            if (lastMessage.contains("stress") || lastMessage.contains("anxiety")) {
-                return "It sounds like you're feeling overwhelmed. Try taking deep breaths. I’m here to listen.";
-            } else if (lastMessage.contains("help")) {
-                return "I'm here to help. If it's an emergency, please call 988.";
-            }
-        }
-
-        // ✅ If no predefined or context-based response, use Gemini API
         return geminiService.getAIResponse(userMessage);
     }
 }

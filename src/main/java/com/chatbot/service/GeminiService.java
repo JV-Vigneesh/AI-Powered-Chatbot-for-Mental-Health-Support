@@ -17,8 +17,16 @@ public class GeminiService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String getAIResponse(String userMessage) {
+        String prompt =
+                "You are an AI chatbot specialized in **mental health support**. " +
+                        "You **ONLY** provide responses related to mental well-being, emotional support, and coping strategies. " +
+                        "If a user asks about **anything unrelated** (e.g., programming, science, general knowledge), **politely refuse** " +
+                        "and guide them back to mental health topics. Here is the user's message: \n\n" + userMessage;
+
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("contents", List.of(Map.of("parts", List.of(Map.of("text", userMessage)))));
+        requestBody.put("contents", List.of(
+                Map.of("parts", List.of(Map.of("text", prompt)))
+        ));
 
         // ✅ Set request headers
         HttpHeaders headers = new HttpHeaders();
