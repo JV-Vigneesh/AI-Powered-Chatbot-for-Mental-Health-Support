@@ -7,7 +7,7 @@ This project is an **AI-driven chatbot** designed to provide **mental health sup
 It integrates **Gemini API** to enhance response generation, ensuring **empathetic and meaningful conversations**.
 
 ---
-<h3>Screenshots</h3>
+<h3>UI Screenshots</h3>
 
 <table>
   <tr>
